@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Spelling Bee Expanded</title>
+  <script src="https://kit.fontawesome.com/d08efb2ad0.js" crossorigin="anonymous"></script>  
+
+  <style>
+    html, body {
+        height: 100%;
+        margin: auto;
+        text-align: center;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    #content {
+        width: 250px;
+        margin: auto;
+        text-align: center;
+        transition: filter 0.2s;
+    }
+
+    #board {
+        display: flex;
+        width: 100%;
+        
+    }
+
+    #left, #right {
+        width: 100px;
+        margin-top: 43px;
+    }
+
+    #middle {
+        width: 100px;
+        margin-left: -25px;
+        margin-right: -25px;
+    }
+
+    .hexagon {
+        position: relative;
+        height: 85px;
+        width: 100px;
+        -webkit-clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+        clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+    }
+    .hexagon:before {
+        position: absolute;
+        content: '';
+        top: 4px;  /* border width */
+        left: 4px;  /* border width */
+        height: calc(100% - 8px);  /* 100% - (2 * border width) */
+        width: calc(100% - 8px);  /* 100% - (2 * border width) */
+        background: #E6E6E6;
+        -webkit-clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+        clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+    }
+    
+    .yellow:before {
+        background: #F7DA20;
+    }
+
+    .letter{
+        position: relative;
+        width: fit-content;
+    }
+    .letterlabel {
+        font-size: 24px;
+        font-weight: bold;
+        position: absolute;
+        top: 29px;
+        left: 42px;
+        z-index: 1;
+        color: #393939;
+        /* border: 1px solid red; */
+    }
+    .letterbtn, .letterbtn:before {
+        z-index: 2;
+        position: absolute;
+        background-color: #ffffff00;
+    }
+
+    #header, #header > h3 {
+        width: 100%;
+        background-color: #505050;
+        color: rgb(244, 244, 244);
+        padding: 0px;
+        margin: 0px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+    #backbtn {
+        position: absolute;
+        left: 15px;
+        top: 20px;
+        font-size: 20px;
+        color: white;
+    }
+
+    #guess {
+        font-size: 26px;
+        margin-top: 3em;
+        font-weight: bold;
+    }
+    button {
+        padding: 1em;
+        font-size: 14px;
+        background-color: white;
+        border: 0.5px dotted rgb(139, 139, 139);
+        border-radius: 2em;
+        color: rgb(107, 107, 107);
+    }
+
+    #guessed {
+        height: fit-content;
+        width: 90vw;
+        margin: auto;
+        color: rgb(183, 183, 183);
+        font-size: 14px;
+        text-align: left;
+    }
+
+    #guessed > #collapsed {
+        border: 0.5px solid rgb(231, 231, 231);
+        border-radius: 0.5em;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        padding: 1em;
+        position: absolute;
+        margin-left: auto;
+        margin-right: auto;
+        left: 5%;
+        right: 5%;
+        z-index: 1;
+        background-color: white;
+        /* animation: glow 1s 1; */
+    }
+
+    @keyframes glow {
+        0% {
+            box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+        }
+
+        20% {
+            box-shadow: 0 0 10px 5px #F7DA20;
+        }
+        70% {
+            box-shadow: 0 0 10px 5px #F7DA20;
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+        }
+    }
+
+    @keyframes shake {
+        0% {
+            margin-left: 0rem;
+        }
+        25% {
+            margin-left: 0.25rem;
+        }
+        75% {
+            margin-left: -0.25rem;
+        }
+        100% {
+            margin-left: 0rem;
+        }
+    }
+
+    #collapsedlist {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        width: 90%;
+    }
+
+    #guessed > #expanded {
+        border: 0.5px solid rgb(231, 231, 231);
+        color: #393939;
+        border-radius: 0.5em;
+        padding: 1em;
+        position: absolute;
+        margin-left: auto;
+        margin-right: auto;
+        left: 5%;
+        right: 5%;
+        text-align: center;
+        z-index: 3;
+        background-color: rgb(255, 255, 255);
+        height: fix-content;
+        min-height: 50vh;
+        display: none;
+    }
+
+    #guessed > #expanded > ul {
+        list-style: none;
+        padding: 0;
+        columns: 2;
+        -webkit-columns: 2;
+        text-align: left;
+    }
+
+
+    #points {
+        color: rgb(107, 107, 107);
+        font-size: 14px;
+    }
+
+    .pangram {
+        font-weight: bold;
+        color: #393939;
+    }
+
+    .progresscontainer {
+        background-color: #E6E6E6;
+        width: 90%; 
+        border-radius: 15px; 
+        margin: auto;
+    }
+
+    #progress { 
+        background-color: #F7DA20;
+        color: #393939; 
+        text-align: right;
+        padding-top: 5px; 
+        padding-bottom: 5px; 
+        font-size: 20px; 
+        border-radius: 15px; 
+        width: 0%; 
+        font-size: 14px;
+        transition: width 2s;
+    } 
+
+    #browse {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        z-index: 4;
+        background-color: white;
+        text-align: left;
+        margin-left: 1em;
+    }
+
+    #browse > div {
+        position: relative;
+        display: inline-flex;
+        margin: 0.5em;
+        padding: 1em;
+        background-color: #F7DA20;
+        text-align: center;
+        border-radius: 1em;
+        height: 100px;
+        width: 100px;
+        aspect-ratio: 1;
+        
+    }
+    #browse > div > p {
+        text-align: center;
+        margin: auto;
+    }
+
+    input {
+        padding: 1em;
+        border-radius: 1em;
+        border: 0.5px solid gray;
+    }
+  
+  </style>
+
+<body>
+    <div id="header">
+        <i id="backbtn" onclick="browse()" class="fa-solid fa-bars"></i>
+        <h3 id="date">Date</h3>
+    </div><br>
+    <div id="browse" style="display: none">
+    </div>
+    <div>
+        <div class="progresscontainer"> 
+            <div id="progress"></div>
+        </div>
+    </div><br>
+    <div id="guessed">
+        <div id="collapsed" onclick="expandGuesses()">
+            <p id="collapsedlist" style="float: left; margin: 0; padding: 0">Guessed words...</p>
+            <i style="float: right; color: #393939;" class="fa-solid fa-chevron-down"></i>
+        </div>
+        <div id="expanded" onclick="collapseGuesses()">
+            <i style="float: right; color: #393939;" class="fa-solid fa-chevron-up"></i>
+            <ul id="expandedlist"></ul>
+        </div>
+    </div>
+    
+    <div id="content">
+    <p id="guess">|</p>
+    <div id="board">
+        <div id="left">
+            <div class="letter">
+                <div id="0-label" class="letterlabel">A</div>
+                <div id="0" onclick="clickLetter(this.id)" class="hexagon letterbtn"></div>
+                <div id="0-hexagon" class="hexagon"></div>
+            </div>
+            <div class="letter">
+                <div id="1-label" class="letterlabel">B</div>
+                <div id="1" onclick="clickLetter(this.id)" class="hexagon letterbtn"></div>
+                <div id="1-hexagon" class="hexagon"></div>
+            </div>
+        </div>
+
+        <div id="middle">
+            <div class="letter">
+                <div id="2-label" class="letterlabel">C</div>
+                <div id="2" onclick="clickLetter(this.id)" class="hexagon letterbtn"></div>
+                <div id="2-hexagon" class="hexagon"></div>
+            </div>
+            <div class="letter">
+                <div id="3-label" class="letterlabel">D</div>
+                <div id="3" onclick="clickLetter(this.id)" class="hexagon letterbtn"></div>
+                <div id="3-hexagon" class="yellow hexagon"></div>
+            </div>
+            <div class="letter">
+                <div id="4-label" class="letterlabel">E</div>
+                <div id="4" onclick="clickLetter(this.id)" class="hexagon letterbtn"></div>
+                <div id="4-hexagon" class="hexagon"></div>
+            </div>
+        </div>
+
+        <div id="right">
+            <div class="letter">
+                <div id="5-label" class="letterlabel">F</div>
+                <div id="5" onclick="clickLetter(this.id)" class="hexagon letterbtn"></div>
+                <div id="5-hexagon" class="hexagon"></div>
+            </div>
+            <div class="letter">
+                <div id="6-label" class="letterlabel">G</div>
+                <div id="6" onclick="clickLetter(this.id)" class="hexagon letterbtn"></div>
+                <div id="6-hexagon" class="hexagon"></div>
+            </div>
+        </div>
+    </div>
+    <br>
+    <button onclick="deleteLetter()">Delete</button>
+    <button onclick="shuffle()" style="margin-left: 5px; margin-right: 5px;"><i class="fa-solid fa-shuffle"></i></button>
+    <button onclick="guess()">Enter</button>
+    <br>
+    </div>
+</body>
+
+<script>
+    var letters = [];
+    var answers = [];
+    var pangrams = [];
+    var guessed = [];
+    var points = 0;
+    var genius = 1000;
+    var alldata = {};
+    var puzzleID = "";
+    
+    function clickLetter(clicked) {
+        document.getElementById("collapsed").style.animation = "";
+        document.getElementById("board").style.animation = "";
+        if(document.getElementById("guess").innerHTML == "|") {
+            document.getElementById("guess").innerHTML = letters[clicked];
+        } else {
+            document.getElementById("guess").innerHTML += letters[clicked];
+        }
+    }
+
+    function deleteLetter() {
+        const prev = document.getElementById("guess").innerText;
+        if(prev == "|" || prev.length <= 1) {
+            document.getElementById("guess").innerText = "|";
+        } else {
+            document.getElementById("guess").innerText = prev.slice(0,-1);
+        }
+    }
+
+    function updateGuessedandPoints(currGuessed) {
+        localStorage.setItem("guessed"+puzzleID, JSON.stringify(currGuessed));
+        var sorted = [...currGuessed].sort();
+        var sortedelems = ""
+        for(let i = 0; i < sorted.length; i++) {
+            if(pangrams.indexOf(sorted[i]) > -1) {
+                sorted[i] = "<strong class='pangram'>"+sorted[i]+"</strong>"
+            }
+            sortedelems += "<li>"+sorted[i]+"</li>";
+        }
+        document.getElementById("expandedlist").innerHTML = sortedelems;
+        
+        var timedelems = []
+        for(let i = 0; i < currGuessed.length; i++) {
+            if(pangrams.indexOf(currGuessed[i]) > -1) {
+                timedelems.push("<strong class='pangram'>"+currGuessed[i]+"</strong>")
+            } else {
+                timedelems.push(currGuessed[i]);
+            }
+        }
+        if(timedelems.length < 1) {
+            document.getElementById("collapsedlist").innerHTML = "Guessed words...";
+        } else {
+            document.getElementById("collapsedlist").innerHTML = timedelems.join(", ");
+        }
+        guessed = currGuessed;
+        points = guessed.reduce((a,b) => a+b.length, 0);
+        pointpercent = Math.min(points / genius * 100, 100);
+        document.getElementById("progress").style.width = pointpercent.toString()+"%";
+    }
+
+    function guess() {
+        const guess = document.getElementById("guess").innerText.toLowerCase();
+        if(guessed.indexOf(guess) > -1) {
+            // Already guessed
+            navigator.vibrate(200);
+            document.getElementById("collapsed").style.animation = "glow 2s 1";
+            document.getElementById("board").style.animation = "shake 0.2s 1";
+        } else if(pangrams.indexOf(guess) > -1) {
+            // Guessed a pangram
+            alert("pangram")
+            guessed.unshift(guess);
+            points += guess.length;
+            updateGuessedandPoints(guessed)
+        } else if(answers.indexOf(guess) > -1) {
+            // Guessed a regular word
+            guessed.unshift(guess);
+            points += guess.length;
+            updateGuessedandPoints(guessed);
+        } else {
+            // Incorrect guess - do some effect
+            navigator.vibrate(200);
+            document.getElementById("board").style.animation = "shake 0.2s 1";
+        }
+        document.getElementById("guess").innerText = "|"
+    }
+
+    function expandGuesses() {
+        document.getElementById("content").style.filter = "opacity(50%)";
+        document.getElementById("collapsed").style.animation = "";
+        document.getElementById("expanded").style.display = "block";
+    
+    }
+
+    function collapseGuesses() {
+        document.getElementById("content").style.filter = "";
+        document.getElementById("collapsed").style.animation = "";
+        document.getElementById("expanded").style.display = "none";
+    
+    }
+
+    function shuffleArray(array) {
+        let currentIndex = array.length,  randomIndex;
+        while (currentIndex > 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [
+            array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    function shuffle() {
+        var otherletters = [...letters]
+        otherletters.splice([...letters].indexOf(centerletter), 1);
+        shuffleArray(otherletters)
+        otherletters.splice(3, 0, centerletter);
+        letters = otherletters;
+
+        for(let i = 0; i < 7; i++) {
+            if(i == 3) {
+                document.getElementById(i+"-label").innerText = centerletter;
+            } else {
+                document.getElementById(i+"-label").innerText = letters[i];
+            }
+        }
+        
+    }
+
+    function browse() {
+        let currDisplay = document.getElementById("browse").style.display
+        if(currDisplay == "none") {
+            document.getElementById("browse").style.display = "block"
+            document.getElementById("date").innerText = "Select a Puzzle";
+        } else {
+            document.getElementById("browse").style.display = "none"
+            document.getElementById("date").innerText = puzzleID;
+        }
+        
+    }
+
+    
+
+    function idToDate(i) {
+        const daysDiff = i-82+1;
+        var startDate = new Date("2018-07-29")
+        var n = startDate.getTime();
+        n += 86400000 * daysDiff;
+        let finalDate = new Date(n);
+        let monthName = finalDate.toLocaleString('default', { month: 'long' });
+        return monthName + " " + ('0' + finalDate.getDate()).slice(-2) + ", " + finalDate.getFullYear();
+    }
+
+    function dateToId(dateInput) {
+        let d = new Date(dateInput);
+        let startDate = new Date("2018-07-29")
+        let diff = Math.round((d.getTime() - startDate.getTime()) / (1000 * 3600 * 24));
+        return 82+diff
+    }
+
+    function datepickerDefault() {
+        const months = {
+            January: '01',
+            February: '02',
+            March: '03',
+            April: '04',
+            May: '05',
+            June: '06',
+            July: '07',
+            August: '08',
+            September: '09',
+            October: '10',
+            November: '11',
+            December: '12',
+        }
+        let temp = puzzleID.split(",");
+        let monthdate = temp[0].split(" ");
+        let year = temp[1].replace(" ", "");
+        let result =  year + "-" + months[monthdate[0]] + "-" + monthdate[1];
+        return result;
+    }
+
+    function initializePuzzle(data, puzzleID) {
+        alldata = data;
+        document.getElementById("date").innerText = puzzleID;
+        letters = data[puzzleID]["letters"];
+        centerletter = data[puzzleID]["center"];
+        genius = data[puzzleID]["genius"];
+        answers = data[puzzleID]["words"];
+        pangrams = data[puzzleID]["pangrams"].map((p) => p.toLowerCase());
+        if(localStorage.getItem("guessed"+puzzleID) !== null) {
+            guessed = JSON.parse(localStorage.getItem("guessed"+puzzleID));
+        } else {
+            guessed = [];
+        }
+        updateGuessedandPoints(guessed);
+        shuffle();
+        document.getElementById("browse").innerHTML += `<input type="date" id="date" name="date" value="`+datepickerDefault()+`" min="2018-07-29" max="2024-03-19" onchange="window.open('index.html?puzzle='+dateToId(this.value), '_self')"/>`;
+    }
+
+    window.onload = (event) => {
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const puzzleNumber = urlParams.get('puzzle')
+        puzzleID = idToDate(puzzleNumber);
+
+        fetch("data.json")
+            .then((res) => {
+                if (!res.ok) {
+                    throw new Error (`HTTP error! Status: ${res.status}`);
+                }
+                return res.json();
+            })
+            .then((data) => initializePuzzle(data, puzzleID));
+    };
+</script>
+
+</html>
