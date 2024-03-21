@@ -415,7 +415,6 @@
             document.getElementById("board").style.animation = "shake 0.2s 1";
         } else if(pangrams.indexOf(guess) > -1) {
             // Guessed a pangram
-            alert("pangram")
             guessed.unshift(guess);
             points += guess.length;
             updateGuessedandPoints(guessed)
@@ -531,20 +530,17 @@
         document.getElementById("date").innerText = puzzleID;
         document.getElementById("browse").innerHTML += `<input type="date" id="date" name="date" value="`+datepickerDefault()+`" min="2018-07-29" max="2024-03-19" onchange="window.open('index.html?puzzle='+dateToId(this.value), '_self')"/>`;
         
-        alert(Object.keys(data).length)
         alldata = data;
         letters = data[puzzleID]["letters"];
         centerletter = data[puzzleID]["center"];
         genius = data[puzzleID]["genius"];
         answers = data[puzzleID]["words"];
         pangrams = data[puzzleID]["pangrams"].map((p) => p.toLowerCase());
-        alert("getting local storage now")
         if(localStorage.getItem("guessed"+puzzleID) !== null) {
             guessed = JSON.parse(localStorage.getItem("guessed"+puzzleID));
         } else {
             guessed = [];
         }
-        alert("updating UI")
         updateGuessedandPoints(guessed);
         shuffle();
     }
