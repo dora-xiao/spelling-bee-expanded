@@ -528,21 +528,25 @@
     }
 
     function initializePuzzle(data, puzzleID) {
-        alldata = data;
         document.getElementById("date").innerText = puzzleID;
+        document.getElementById("browse").innerHTML += `<input type="date" id="date" name="date" value="`+datepickerDefault()+`" min="2018-07-29" max="2024-03-19" onchange="window.open('index.html?puzzle='+dateToId(this.value), '_self')"/>`;
+        
+        alert(Object.keys(data).length)
+        alldata = data;
         letters = data[puzzleID]["letters"];
         centerletter = data[puzzleID]["center"];
         genius = data[puzzleID]["genius"];
         answers = data[puzzleID]["words"];
         pangrams = data[puzzleID]["pangrams"].map((p) => p.toLowerCase());
+        alert("getting local storage now")
         if(localStorage.getItem("guessed"+puzzleID) !== null) {
             guessed = JSON.parse(localStorage.getItem("guessed"+puzzleID));
         } else {
             guessed = [];
         }
+        alert("updating UI")
         updateGuessedandPoints(guessed);
         shuffle();
-        document.getElementById("browse").innerHTML += `<input type="date" id="date" name="date" value="`+datepickerDefault()+`" min="2018-07-29" max="2024-03-19" onchange="window.open('index.html?puzzle='+dateToId(this.value), '_self')"/>`;
     }
 
     window.onload = (event) => {
